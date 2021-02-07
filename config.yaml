@@ -1,0 +1,10 @@
+bot:
+  prefix: "!"
+  extensions:
+    - bot.cogs.log
+
+guild:
+  roles:
+    staff: 805118172524576788
+  channels:
+    delete_log: 804707231077629962
