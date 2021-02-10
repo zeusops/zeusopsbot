@@ -1,6 +1,7 @@
 bot:
   prefix: "!"
   extensions:
+    - bot.cogs.reload
     - bot.cogs.log
     - bot.cogs.pin
 
