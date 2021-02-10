@@ -1,16 +1,18 @@
 import traceback
 
-from discord.ext.commands import Bot, Cog, Context, ExtensionNotLoaded, command
+from bot import ZeusBot
+from discord.ext.commands import Cog, Context, ExtensionNotLoaded, command
 
 
 class Reload(Cog):
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: ZeusBot):
         self.bot = bot
         self.extensions = self.bot.config['bot']['extensions']
 
     @command()
     async def reload(self, ctx: Context):
         print("Reloading extensions")
+        self.bot.reload_config()
 
         unloaded = []
         for extension in self.extensions:

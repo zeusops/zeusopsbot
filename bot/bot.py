@@ -9,10 +9,9 @@ class ZeusBot(commands.Bot):
         super().__init__(*args, **kwargs)
         self.config = config
         self.channels: Dict[str, TextChannel] = {}
-        # self.add_listener(self.on_ready)
 
     @classmethod
-    def create(cls) -> "ZeusBot":
+    def _load_config(cls) -> Dict:
         with open("config.yaml", "r") as f:
             config = yaml.load(f, yaml.SafeLoader)
         try:
@@ -30,6 +29,11 @@ class ZeusBot(commands.Bot):
         if 'token' not in config['bot']:
             raise ValueError(
                 "Token has to be defined in config.yaml or config_local.yaml")
+        return config
+
+    @classmethod
+    def create(cls) -> "ZeusBot":
+        config = cls._load_config()
         return cls(
             command_prefix=config['bot']['prefix'],
             config=config,
@@ -37,6 +41,9 @@ class ZeusBot(commands.Bot):
 
     def run(self, *args, **kwargs) -> None:
         super().run(self.config['bot']['token'], *args, **kwargs)
+
+    def reload_config(self):
+        self.config = self._load_config()
 
     async def on_ready(self):
         print("waiting until ready")
