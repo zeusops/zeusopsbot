@@ -1,15 +1,15 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from bot import ZeusBot
-from discord.channel import TextChannel
+from bot.cog import Cog
 from discord import Message
+from discord.channel import TextChannel
 from discord.ext import commands
 
 
-class Pin(commands.Cog):
+class Pin(Cog):
     def __init__(self, bot: ZeusBot) -> None:
-        self.bot = bot
-        self.config: Dict = self.bot.config['cogs']['pin']
+        super().__init__(bot)
         self.keyword: str = self.config['keyword']
         self.channel: Optional[TextChannel] = None
 
