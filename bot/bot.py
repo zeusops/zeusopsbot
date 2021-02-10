@@ -43,8 +43,7 @@ class LogBot(commands.Bot):
         await self._get_channels()
         print("bot channels", self.channels)
         print("ready")
-        # self.init_done = True
-        self.load_extensions()
+        await self.load_extensions()
 
     async def _get_channels(self):
         channels = self.config['guild']['channels']
@@ -52,6 +51,9 @@ class LogBot(commands.Bot):
             channel = await self.fetch_channel(channel_id)
             self.channels[channel_name] = channel
 
-    def load_extensions(self) -> None:
+    async def load_extensions(self) -> None:
         for extension in self.config['bot']['extensions']:
             self.load_extension(extension)
+        for cog in self.cogs.values():
+            if "init" in dir(cog):
+                await cog.init()
