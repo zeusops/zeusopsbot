@@ -1,9 +1,9 @@
 bot:
   prefix: "!"
   extensions:
-    - bot.cogs.reload
-    - bot.cogs.log
-    - bot.cogs.pin
+  - bot.cogs.reload
+  - bot.cogs.log
+  - bot.cogs.pin
 
 guild:
   roles:
@@ -15,3 +15,26 @@ cogs:
   pin:
     channel: 804707231077629962
     keyword: SUGGESTION
+  suggestions:
+    channels:
+      suggestions: 804707231077629962
+      discussion: 809132751226798143
+    reactions:
+      # \N{HEAVY PLUS SIGN}
+      plus: "\u2795"
+      # \N{HEAVY MINUS SIGN}
+      minus: "\u2796"
+      # \N{WAVY DASH}
+      wave: "\u3030"
+    keyword: '**'
+    # {0} gets replaced by the name of the channel
+    # {1} gets replaced by the original message
+    message: >
+      Invalid format in #{0}, please post your suggestion in a single message
+      and follow the pinned template (press Shift+Enter for a new line). The
+      message has to start with a `**bolded**` title. If you already posted a
+      suggestion, please edit the original message instead of sending multiple
+      messages.
+      ```
+      {1}
+      ```
