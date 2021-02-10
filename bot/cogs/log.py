@@ -1,19 +1,18 @@
 import pprint
-import time
-from typing import List
-
-from discord import AuditLogAction, Message, RawMessageDeleteEvent, Guild, AuditLogEntry, channel
-from discord.ext import commands, tasks
+from typing import Dict, List
 
 from bot import LogBot
+from discord import (AuditLogAction, AuditLogEntry, Guild, Message,
+                     RawMessageDeleteEvent)
+from discord.ext import commands, tasks
 
 
 class Log(commands.Cog):
     def __init__(self, bot: LogBot) -> None:
         self.bot = bot
         print("log init")
-        self.log_entries = {}
-        self.messages = {}
+        self.log_entries: Dict[int, AuditLogEntry] = {}
+        # self.messages: Dict = {}
         self.deleted: List[Message] = []
         self.check_audit_log.start()
         # self.show_message_cache.start()
@@ -50,8 +49,10 @@ class Log(commands.Cog):
         # print("log channels", self.bot.channels)
         guild: Guild = self.bot.channels['delete_log'].guild
         entry: AuditLogEntry
-        async for entry in guild.audit_logs(action=AuditLogAction.message_delete):
-            if entry.id not in self.log_entries or entry.extra.count != self.log_entries[entry.id]['count']:
+        async for entry in guild.audit_logs(
+                action=AuditLogAction.message_delete):
+            if entry.id not in self.log_entries or \
+                    entry.extra.count != self.log_entries[entry.id]['count']:
                 # a completely new entry has been added
                 if entry.id not in self.log_entries:
                     print("entry not in list")
@@ -60,39 +61,32 @@ class Log(commands.Cog):
                     print("counter increased")
                 print(entry, entry.extra.count)
                 channel = entry.extra.channel
-                entry_count = entry.extra.count - self.log_entries[entry.id]['count']
+                entry_count = entry.extra.count - \
+                    self.log_entries[entry.id]['count']
                 if self.deleted:
                     for i in range(entry_count):
                         remove = []
                         for message in reversed(self.deleted):
-                            if message.channel == channel and message.author == entry.target:
-                                print("message by {} deleted in {} by {}: {}".format(message.author, message.channel, entry.user, message.content))
+                            if message.channel == channel and \
+                                    message.author == entry.target:
+                                print("message by {} deleted in {} by {}: {}"
+                                      .format(message.author, message.channel,
+                                              entry.user, message.content))
                                 remove.append(message)
                             else:
                                 print("no match", message)
-                        self.deleted = [m for m in self.deleted if m not in remove]
-                self.log_entries[entry.id] = {'entry': entry, 'count': entry.extra.count}
+                        self.deleted = [m for m in self.deleted
+                                        if m not in remove]
+                self.log_entries[entry.id] = {'entry': entry,
+                                              'count': entry.extra.count}
         self.deleted = []
-            # else:
-            #     if entry.extra.count != self.log_entries[entry.id]['count']:
-            #         # counter in an existing entry has been increased
-            #         print("counter increased")
-            #         self.log_entries[entry.id] = {'entry': entry, 'count': entry.extra.count}
-
-            #     print('{0.user} did {0.action} to {0.target}'.format(entry))
-            #     pprint.pprint(vars(entry))
-            #     # pprint.pprint(dir(entry.extra))
-            #     pprint.pprint({attr: getattr(entry.extra, attr, None) for attr in dir(entry.extra)})
-
-            # else:
-        # await self.bot.logout()
 
     @tasks.loop(seconds=3.0)
     async def show_message_cache(self):
         print("cache")
         for message in self.bot.cached_messages:
-            pprint.pprint({attr: getattr(message, attr, None) for attr in message.__slots__})
-        # print(vars(self.bot.cached_messages))
+            pprint.pprint({attr: getattr(message, attr, None)
+                           for attr in message.__slots__})
 
 
 def setup(bot: LogBot):

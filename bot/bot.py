@@ -28,7 +28,8 @@ class LogBot(commands.Bot):
             # Local config doesn't exist, continue
             pass
         if 'token' not in config['bot']:
-            raise ValueError("Token has to be defined in config.yaml or config_local.yaml")
+            raise ValueError(
+                "Token has to be defined in config.yaml or config_local.yaml")
         return cls(
             command_prefix=config['bot']['prefix'],
             config=config,
