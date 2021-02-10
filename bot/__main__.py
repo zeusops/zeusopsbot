@@ -1,5 +1,5 @@
-from bot.bot import LogBot
+from bot.bot import ZeusBot
 
-instance = LogBot.create()
+instance = ZeusBot.create()
 print(instance.config)
 instance.run()

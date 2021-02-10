@@ -1,14 +1,14 @@
 import pprint
 from typing import Dict, List
 
-from bot import LogBot
+from bot import ZeusBot
 from discord import (AuditLogAction, AuditLogEntry, Guild, Message,
                      RawMessageDeleteEvent)
 from discord.ext import commands, tasks
 
 
 class Log(commands.Cog):
-    def __init__(self, bot: LogBot) -> None:
+    def __init__(self, bot: ZeusBot) -> None:
         self.bot = bot
         print("log init")
         self.log_entries: Dict[int, AuditLogEntry] = {}
@@ -89,5 +89,5 @@ class Log(commands.Cog):
                            for attr in message.__slots__})
 
 
-def setup(bot: LogBot):
+def setup(bot: ZeusBot):
     bot.add_cog(Log(bot))

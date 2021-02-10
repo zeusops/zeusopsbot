@@ -1,4 +1,4 @@
 from typing import Optional
-from bot.bot import LogBot
+from bot.bot import ZeusBot
 
-instance: Optional[LogBot] = None
+instance: Optional[ZeusBot] = None

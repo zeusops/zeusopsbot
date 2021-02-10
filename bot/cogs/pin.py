@@ -1,13 +1,13 @@
 from typing import Dict, Optional
 
+from bot import ZeusBot
 from discord.channel import TextChannel
-from bot import LogBot
 from discord import Message
 from discord.ext import commands
 
 
 class Pin(commands.Cog):
-    def __init__(self, bot: LogBot) -> None:
+    def __init__(self, bot: ZeusBot) -> None:
         self.bot = bot
         self.config: Dict = self.bot.config['cogs']['pin']
         self.keyword: str = self.config['keyword']
@@ -25,5 +25,5 @@ class Pin(commands.Cog):
             await message.pin(reason="Automatic suggestion pin")
 
 
-def setup(bot: LogBot):
+def setup(bot: ZeusBot):
     bot.add_cog(Pin(bot))

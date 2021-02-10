@@ -4,7 +4,7 @@ from discord.ext import commands
 from discord import TextChannel
 
 
-class LogBot(commands.Bot):
+class ZeusBot(commands.Bot):
     def __init__(self, *args, config: Dict, **kwargs):
         super().__init__(*args, **kwargs)
         self.config = config
@@ -12,7 +12,7 @@ class LogBot(commands.Bot):
         # self.add_listener(self.on_ready)
 
     @classmethod
-    def create(cls) -> "LogBot":
+    def create(cls) -> "ZeusBot":
         with open("config.yaml", "r") as f:
             config = yaml.load(f, yaml.SafeLoader)
         try:
