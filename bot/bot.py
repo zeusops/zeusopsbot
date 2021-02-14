@@ -48,16 +48,8 @@ class ZeusBot(commands.Bot):
     async def on_ready(self):
         print("waiting until ready")
         await self.wait_until_ready()
-        await self._get_channels()
-        print("bot channels", self.channels)
         print("ready")
         await self.load_extensions()
-
-    async def _get_channels(self):
-        channels = self.config['guild']['channels']
-        for channel_name, channel_id in channels.items():
-            channel = await self.fetch_channel(channel_id)
-            self.channels[channel_name] = channel
 
     async def load_extensions(self) -> None:
         for extension in self.config['bot']['extensions']:

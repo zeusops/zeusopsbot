@@ -2,12 +2,13 @@ import pprint
 from typing import Dict, List
 
 from bot import ZeusBot
+from bot.cog import Cog
 from discord import (AuditLogAction, AuditLogEntry, Guild, Message,
                      RawMessageDeleteEvent)
 from discord.ext import commands, tasks
 
 
-class Log(commands.Cog):
+class Log(Cog):
     def __init__(self, bot: ZeusBot) -> None:
         self.bot = bot
         print("log init")
@@ -16,6 +17,11 @@ class Log(commands.Cog):
         self.deleted: List[Message] = []
         self.check_audit_log.start()
         # self.show_message_cache.start()
+
+    async def init(self):
+        for name, id in self.config['channels'].values():
+            channel = await self.bot.fetch_channel(id)
+            self.channels[name] = channel
 
     # @commands.Cog.listener()
     # async def on_ready(self):
@@ -46,8 +52,8 @@ class Log(commands.Cog):
     @tasks.loop(seconds=5.0)
     async def check_audit_log(self):
         print("task")
-        # print("log channels", self.bot.channels)
-        guild: Guild = self.bot.channels['delete_log'].guild
+        # print("log channels", self.channels)
+        guild: Guild = self.channels['delete_log'].guild
         entry: AuditLogEntry
         async for entry in guild.audit_logs(
                 action=AuditLogAction.message_delete):

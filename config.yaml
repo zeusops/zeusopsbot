@@ -8,10 +8,11 @@ bot:
 guild:
   roles:
     staff: 805118172524576788
-  channels:
-    delete_log: 804707231077629962
 
 cogs:
+  log:
+    channels:
+      delete_log: 804707231077629962
   pin:
     channel: 804707231077629962
     keyword: SUGGESTION
