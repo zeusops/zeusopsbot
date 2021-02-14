@@ -1,8 +1,5 @@
 from typing import List, Dict
 
-import discord
-from discord.ext.commands.context import Context
-
 from bot import ZeusBot
 from bot.cog import Cog
 from discord import Embed, Message
@@ -33,9 +30,9 @@ class Suggestions(Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):
-        if not self._correct_channel(message.channel) or \
-                message.author.bot or \
-                message.content.startswith(self.bot.command_prefix):
+        if message.author.bot or \
+                message.content.startswith(self.bot.command_prefix) or \
+                not self._correct_channel(message.channel):
             # We only care about messages that are sent to the suggestion
             # channels, not sent by bots and are not commands
             return
@@ -47,7 +44,7 @@ class Suggestions(Cog):
             if not message.attachments:
                 # Messages with attachments are allowed because you can't
                 # add multiple attachments in a single message, other messages
-                # will be deleted
+                # will be deleted with a notification to the author
                 await message.author.send(self.config['message']
                                           .format(message.channel.name,
                                                   message.content))
