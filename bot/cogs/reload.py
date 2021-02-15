@@ -57,6 +57,10 @@ class Reload(Cog):
         else:
             return True
 
+    @reload.error
+    async def _command_error(self, ctx: Context, error: CommandError):
+        await ctx.send("An error occured: {}".format(error))
+
 
 def setup(bot):
     bot.add_cog(Reload(bot))
