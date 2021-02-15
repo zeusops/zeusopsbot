@@ -5,9 +5,12 @@ bot:
   - bot.cogs.suggestions
   # - bot.cogs.log
   # - bot.cogs.pin
+  admins:
+  - 150625032656125952
 
 guild:
   roles:
+    # staff @ Foobar
     staff: 805118172524576788
 
 cogs:
@@ -19,17 +22,17 @@ cogs:
     keyword: SUGGESTION
   suggestions:
     channels:
-      - suggestions: 804707231077629962
-        discussion: 809132751226798143
-      - suggestions: 809802914373304420
-        discussion: 809802939497054208
+    - suggestions: 804707231077629962
+      discussion: 809132751226798143
+    - suggestions: 809802914373304420
+      discussion: 809802939497054208
     reactions:
       # \N{HEAVY PLUS SIGN}
-      - "\u2795"
+    - "\u2795"
       # \N{HEAVY MINUS SIGN}
-      - "\u2796"
+    - "\u2796"
       # \N{WAVY DASH}
-      - "\u3030"
+    - "\u3030"
     keyword: '**'
     # {0} gets replaced by the name of the channel
     # {1} gets replaced by the original message

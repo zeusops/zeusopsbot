@@ -1,7 +1,9 @@
-from typing import Dict
+from typing import Dict, Union
+
 import yaml
+from discord import Member, TextChannel
+from discord.abc import User
 from discord.ext import commands
-from discord import TextChannel
 
 
 class ZeusBot(commands.Bot):
@@ -9,6 +11,28 @@ class ZeusBot(commands.Bot):
         super().__init__(*args, **kwargs)
         self.config = config
         self.channels: Dict[str, TextChannel] = {}
+        self.staff_role = self.config['guild']['roles']['staff']
+
+    def is_admin(self, user: Union[User, Member]):
+        return user.id in self.config['bot']['admins']
+
+    def is_staff(self, user: Union[User, Member]) -> bool:
+        """Returns true if the member has a staff role defined in the config
+
+        Currently this only checks a single role, doesn't take multiple guilds
+        into account."""
+
+        if self.is_admin(user):
+            # Admin is considered staff across all guilds
+            return True
+        try:
+            for role in user.roles:
+                if role.id == self.staff_role or role.name == self.staff_role:
+                    return True
+        except AttributeError:
+            # Most likely got passed a User from a DM -> never staff
+            pass
+        return False
 
     @classmethod
     def _load_config(cls) -> Dict:
@@ -46,10 +70,11 @@ class ZeusBot(commands.Bot):
         self.config = self._load_config()
 
     async def on_ready(self):
-        print("waiting until ready")
+        print("Waiting until ready")
         await self.wait_until_ready()
-        print("ready")
+        print("Connected")
         await self.load_extensions()
+        print("Extensions loaded")
 
     async def load_extensions(self) -> None:
         for extension in self.config['bot']['extensions']:

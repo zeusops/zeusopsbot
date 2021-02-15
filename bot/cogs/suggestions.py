@@ -14,6 +14,7 @@ class Suggestions(Cog):
         self.channels: List[Dict[str, TextChannel]] = []
 
     async def init(self):
+        await super().init()
         for channels in self.config['channels']:
             suggestions = await self.bot.fetch_channel(channels['suggestions'])
             discussion = await self.bot.fetch_channel(channels['discussion'])

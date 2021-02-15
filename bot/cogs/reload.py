@@ -1,15 +1,21 @@
 import traceback
 
 from bot import ZeusBot
-from discord.ext.commands import Cog, Context, ExtensionNotLoaded, command
+from bot.cog import Cog
+from discord.ext import commands
+from discord.ext.commands import Context, ExtensionNotLoaded
+from discord.ext.commands.errors import CheckFailure, CommandError
 
 
 class Reload(Cog):
     def __init__(self, bot: ZeusBot):
-        self.bot = bot
+        super().__init__(bot)
         self.extensions = self.bot.config['bot']['extensions']
+        self.checks = {
+            'reload': self._is_staff,
+        }
 
-    @command()
+    @commands.command()
     async def reload(self, ctx: Context):
         print("Reloading extensions")
         self.bot.reload_config()
@@ -34,6 +40,11 @@ class Reload(Cog):
         for cog in self.bot.cogs.values():
             if "init" in dir(cog):
                 await cog.init()
+
+    def _is_staff(self, ctx: Context):
+        if not self.bot.is_staff(ctx.author):
+            raise CheckFailure("Not staff")
+        return True
 
     async def _unload_extension(self, ctx, extension):
         try:
