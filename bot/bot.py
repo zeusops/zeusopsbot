@@ -6,6 +6,30 @@ from discord.abc import User
 from discord.ext import commands
 
 
+def _merge(a, b, path=[], update=True):
+    """merges b into a
+    http://stackoverflow.com/questions/7204805/python-dictionaries-of-dictionaries-merge
+    https://stackoverflow.com/a/25270947/3005969"""
+    for key in b:
+        if key in a:
+            if isinstance(a[key], dict) and isinstance(b[key], dict):
+                _merge(a[key], b[key], path + [str(key)])
+            elif a[key] == b[key]:
+                pass  # same leaf value
+            elif isinstance(a[key], list) and isinstance(b[key], list):
+                for idx, val in enumerate(b[key]):
+                    a[key][idx] = _merge(a[key][idx], b[key][idx],
+                                         path + [str(key), str(idx)],
+                                         update=update)
+            elif update:
+                a[key] = b[key]
+            else:
+                raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
+        else:
+            a[key] = b[key]
+    return a
+
+
 class ZeusBot(commands.Bot):
     def __init__(self, *args, config: Dict, **kwargs):
         super().__init__(*args, **kwargs)
@@ -41,12 +65,7 @@ class ZeusBot(commands.Bot):
         try:
             with open("config_local.yaml", "r") as f:
                 local_config = yaml.load(f, yaml.SafeLoader)
-            for key, value in local_config.items():
-                if isinstance(value, dict):
-                    for key_, value_ in value.items():
-                        config[key][key_] = value_
-                else:
-                    config[key] = value
+            config = _merge(config, local_config)
         except FileNotFoundError:
             # Local config doesn't exist, continue
             pass
