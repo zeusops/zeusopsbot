@@ -11,6 +11,7 @@ class Suggestions(Cog):
     def __init__(self, bot: ZeusBot) -> None:
         super().__init__(bot)
         self.keyword: str = self.config['keyword']
+        self.image_keyword: str = self.config['image_keyword']
         self.channels: List[Dict[str, TextChannel]] = []
 
     async def init(self):
@@ -38,17 +39,40 @@ class Suggestions(Cog):
             # channels, not sent by bots and are not commands
             return
 
+        is_suggestion = False
+        is_image = False
+
         if message.content.startswith(self.keyword):
+            is_suggestion = True
+        if message.attachments:
+            is_image = True
+        if len(message.content.split('\n')) > 1:
+            # It's quite unlikely that an image has a multiline caption
+            is_image = False
+        if 'http' in message.content:
+            # If the message contains a link, it's not an image. No reason to
+            # have links in image captions by default
+            is_image = False
+        if message.content.startswith(self.image_keyword):
+            # Message explicitly marked as image caption
+            is_suggestion = False
+            is_image = True
+
+        if is_suggestion:
             await self._handle_suggestion(message)
         else:
             # User posted a random message, not in format
-            if not message.attachments:
-                # Messages with attachments are allowed because you can't
-                # add multiple attachments in a single message, other messages
-                # will be deleted with a notification to the author
-                await message.author.send(self.config['message']
-                                          .format(message.channel.name,
-                                                  message.content))
+            if is_image:
+                # Messages with attachments and captions are allowed because
+                # the desktop client can't add multiple attachments in a single
+                # message
+                return
+            else:
+                # Other messages will be deleted after sending a notification
+                # to the author
+                text = self.config['message'].format(
+                    message.channel.name, message.content, self.image_keyword)
+                await message.author.send(text)
                 await message.delete()
 
     async def _handle_suggestion(self, message: Message):

@@ -36,14 +36,25 @@ cogs:
     # \N{WAVY DASH}
     - "\u3030"
     keyword: '**'
-    # {0} gets replaced by the name of the channel
-    # {1} gets replaced by the original message
+    image_keyword: 'IMG:'
+    # Replaced variables:
+    #   {0}: the name of the suggestion channel
+    #   {1}: the original message
+    #   {2}: the image keyword
+    # Message gets folded to a single line, leave a blank line to create a
+    # line break
     message: >
       Invalid format in `#{0}`, please post your suggestion in a single message
       and follow the pinned template (press Shift+Enter for a new line). The
       message has to start with a `**bolded**` title. If you already posted a
       suggestion, please edit the original message instead of sending multiple
       messages.
+
       ```
+
       {1}
+
       ```
+
+      If this is an image with a caption that wasn't detected
+      correctly, please prefix the message with `{2}`
