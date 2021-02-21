@@ -1,0 +1,19 @@
+bot:
+  token: "token here"
+  admins:
+  - 123456
+guild:
+  roles:
+    staff: 123456
+cogs:
+  log:
+    channels:
+      delete_log: 123456
+  pin:
+    channel: 123456
+  suggestions:
+    channels:
+    - suggestions: 123456
+      discussion: 123456
+    - suggestions: 123456
+      discussion: 123456

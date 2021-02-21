@@ -1,5 +1,5 @@
 bot:
-  prefix: "!"
+  prefix: "~"
   extensions:
   - bot.cogs.reload
   - bot.cogs.debug
@@ -7,32 +7,33 @@ bot:
   # - bot.cogs.log
   # - bot.cogs.pin
   admins:
+  # Gehock#9200
   - 150625032656125952
 
 guild:
   roles:
-    # staff @ Foobar
-    staff: 805118172524576788
+    # staff @ Zeus Operations
+    staff: 287726126917222402
 
 cogs:
-  log:
-    channels:
-      delete_log: 804707231077629962
-  pin:
-    channel: 804707231077629962
-    keyword: SUGGESTION
+  # log:
+  #   channels:
+  #     delete_log: 0
+  # pin:
+  #   channel: 0
+  #   keyword: SUGGESTION
   suggestions:
     channels:
-    - suggestions: 804707231077629962
-      discussion: 809132751226798143
-    - suggestions: 809802914373304420
-      discussion: 809802939497054208
+    - suggestions: 360434525798531084
+      discussion: 418476840806645770
+    - suggestions: 810636847780331531
+      discussion: 810636915858210876
     reactions:
-      # \N{HEAVY PLUS SIGN}
+    # \N{HEAVY PLUS SIGN}
     - "\u2795"
-      # \N{HEAVY MINUS SIGN}
+    # \N{HEAVY MINUS SIGN}
     - "\u2796"
-      # \N{WAVY DASH}
+    # \N{WAVY DASH}
     - "\u3030"
     keyword: '**'
     # {0} gets replaced by the name of the channel
