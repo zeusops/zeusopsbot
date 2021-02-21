@@ -11,6 +11,7 @@ class Debug(Cog):
         super().__init__(bot)
         self.checks = {
             'configdump': self._is_staff,
+            'configreload': self._is_staff,
         }
 
     async def _dump_config(self, ctx: Context):
