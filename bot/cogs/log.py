@@ -15,7 +15,7 @@ class Log(Cog):
         self.log_entries: Dict[int, AuditLogEntry] = {}
         # self.messages: Dict = {}
         self.deleted: List[Message] = []
-        self.check_audit_log.start()
+        self.check_audit_log.start()  # pylint: disable=E1101
         # self.show_message_cache.start()
 
     async def init(self):
