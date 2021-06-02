@@ -4,6 +4,7 @@ bot:
   - bot.cogs.reload
   - bot.cogs.debug
   - bot.cogs.suggestions
+  - bot.cogs.meeting_notes
   # - bot.cogs.log
   # - bot.cogs.pin
   admins:
@@ -58,3 +59,7 @@ cogs:
 
       If this is an image with a caption that wasn't detected
       correctly, please prefix the message with `{2}`
+  meetingnotes:
+    keyword: '**'
+    channels:
+      suggestions: 360434525798531084
