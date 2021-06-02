@@ -64,6 +64,7 @@ class Reload(Cog):
         except Exception:
             await ctx.send("An error occured while reloading: ```{}```"
                            .format(traceback.format_exc()))
+            print(traceback.format_exc())
             return False
         else:
             return True
