@@ -91,6 +91,7 @@ class ZeusBot(commands.Bot):
     async def on_ready(self):
         print("Waiting until ready")
         await self.wait_until_ready()
+        print(f"Logged in as {self.user.name}#{self.user.discriminator}")
         print("Connected")
         await self.load_extensions()
         print("Extensions loaded")
