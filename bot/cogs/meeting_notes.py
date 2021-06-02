@@ -74,8 +74,6 @@ FOOTER = """## Community votes
 
 ![CO](https://cdn.discordapp.com/attachments/582590015054544896/620340512905363466/a.png)
 ![Mod votes](https://cdn.discordapp.com/attachments/582590015054544896/620340540604547092/a.png)
-![Sideop](https://cdn.discordapp.com/attachments/582590015054544896/620340592299212800/a.png)
-![Terrains](https://cdn.discordapp.com/attachments/582590015054544896/620340616043298826/a.png)
 
 ### Mods
 
@@ -86,18 +84,29 @@ kept
 - removed
 ```
 
-**Mod changes** to the default collection:
+Mod changes to the **default collection**:
 ```diff
 + added
 kept
 - removed
 ```
 
-**Mod changes** to the optional collection:
+Mod changes to the **optional collection**:
 ```diff
 + added
 kept
 - removed
+```
+
+### COs
+
+**COs** this month:
+```
+MAJ 
+CPT 
+CPT 
+1LT 
+1LT 
 ```
 """  # NOQA
 
