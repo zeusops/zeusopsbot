@@ -18,6 +18,7 @@ class Debug(Cog):
         # Replace backticks with \` in order to prevent discord code blocks
         # from breaking
         config = yaml.dump(self.bot.config).replace('`', '\\`')
+        config = config.replace(self.bot.config['bot']['token'], "REDACTED")
         await ctx.send("```yaml\n{}```".format(config))
 
     @commands.command(aliases=['cfgd'])
