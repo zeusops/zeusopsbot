@@ -59,6 +59,7 @@ cogs:
 
       If this is an image with a caption that wasn't detected
       correctly, please prefix the message with `{2}`
+    post_links: False
   meetingnotes:
     keyword: '**'
     channels:

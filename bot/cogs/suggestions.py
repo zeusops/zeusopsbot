@@ -76,21 +76,26 @@ class Suggestions(Cog):
                 await message.delete()
 
     async def _handle_suggestion(self, message: Message):
-        channels = [ch for ch in self.channels
-                    if message.channel == ch['suggestions']][0]
+        if self.config['post_links']:
+            channels = [ch for ch in self.channels
+                        if message.channel == ch['suggestions']][0]
 
-        title = message.content.split('\n')[0].replace('**', '')
-        embed = Embed(title=title, description="[Link to suggestion]({})"
-                                               .format(message.jump_url))
-        embed.set_author(name=message.author.display_name)
-        discussion_message = await channels['discussions'].send(embed=embed)
+            title = message.content.split('\n')[0].replace('**', '')
+            embed = Embed(title=title, description="[Link to suggestion]({})"
+                                                   .format(message.jump_url))
+            embed.set_author(name=message.author.display_name)
+            discussion_message = await channels['discussions'].send(embed=embed)
 
-        embed = Embed(description="[Link to discussion]({})"
-                                  .format(discussion_message.jump_url))
-        suggestion_message = await channels['suggestions'].send(embed=embed)
+            embed = Embed(description="[Link to discussion]({})"
+                                      .format(discussion_message.jump_url))
+            suggestion_message = await channels['suggestions'].send(embed=embed)
+
+            reaction_target = suggestion_message
+        else:
+            reaction_target = message
 
         for reaction in self.config['reactions']:
-            await suggestion_message.add_reaction(reaction)
+            await reaction_target.add_reaction(reaction)
 
 
 def setup(bot: ZeusBot):
