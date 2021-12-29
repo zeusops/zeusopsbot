@@ -1,25 +1,25 @@
+import subprocess
 import json
 import re
 import traceback
-
 from enum import IntEnum
-from typing import Any, Callable, Dict, List
-from discord.guild import Guild
+from typing import Any, Callable, List, Optional
 
-from discord.user import User
-
-from bot import ZeusBot
-from bot.cog import Cog
 from discord import Message, NotFound
 from discord.channel import TextChannel
 from discord.ext import commands
 from discord.ext.commands import Context
 from discord.ext.commands.converter import MessageConverter
 from discord.ext.commands.errors import CommandError
+from discord.guild import Guild
+from discord.user import User
+
+from bot import ZeusBot
+from bot.cog import Cog
 
 STEAM_URL_PATTERN = '(https://steamcommunity.com/' \
                     '.*/filedetails/\\?id=\\d+)'
-CATEGORY_OPTIONS = "1, c, co\n2, b, both\n3, s, staff"
+CATEGORY_OPTIONS = "1, c, co\n2, b, both\n3, s, staff\n4, e, edit"
 
 START = """CO & Staff meeting 2021-mm
 ===
@@ -112,12 +112,11 @@ CPT
 
 
 class InvalidReply(Exception):
-    def __init__(self, message: str = None):
-        self.message = message
+    pass
 
-    def __str__(self):
-        return self.message
 
+class PromptCancelled(Exception):
+    pass
 
 class NoChanges(Exception):
     pass
@@ -132,13 +131,13 @@ class Type(IntEnum):
 
 class Suggestion:
     def __init__(self, author: str, title: str, url: str, category: Type,
-                 steam_url: str = None):
+                 steam_url: Optional[str] = None):
         self.author: str = author
         self.title: str = title
         self.url: str = url
-        self.steam_url: str = steam_url
-        self.category: str = category
-        self.number = None
+        self.steam_url: Optional[str] = steam_url
+        self.category: Type = category
+        self.number: Optional[int] = None
 
     def dump(self):
         return vars(self)
@@ -155,22 +154,23 @@ def parse_code_block(text: str):
     if text.startswith('```') and text.endswith('```'):
         rest = text.split('\n')[1:]
         return '\n'.join(rest)[:-3]
-    else:
-        return text
+    return text
 
 
 class MeetingNotes(Cog):
+    CATEGORY_NAMES = ["CO", "Staff & CO", "Staff", "Unknown"]
+
     def __init__(self, bot: ZeusBot) -> None:
         super().__init__(bot)
         self.keyword: str = self.config['keyword']
         self.channel: TextChannel = None
         self.suggestions: List[Suggestion] = []
-        self.co: List[Suggestion] = []
+        self.officers: List[Suggestion] = []
         self.both: List[Suggestion] = []
         self.staff: List[Suggestion] = []
         self.unknown: List[Suggestion] = []
         self.categories: List[List[Suggestion]] = []
-        self.category_names = ["CO", "Staff & CO", "Staff", "Unknown"]
+        self.awaiting_reply = False
 
     async def init(self):
         await super().init()
@@ -204,6 +204,8 @@ class MeetingNotes(Cog):
         await ctx.send("Saving")
         await self._save()
         await ctx.send("Done")
+        await ctx.send(subprocess.check_output(
+            ["gh", "gist", "create", "notes.md"]).decode())
 
     @commands.command(aliases=['c'])
     async def categorize(self, ctx: Context):
@@ -234,7 +236,7 @@ class MeetingNotes(Cog):
                     try:
                         author = await guild.fetch_member(author.id)
                     except NotFound:
-                        # User is not a member of the guild anymore, default 
+                        # User is not a member of the guild anymore, default
                         # to the discord username instead of custom nickname
                         pass
                 title = text.split('\n')[0].strip('*')
@@ -242,9 +244,10 @@ class MeetingNotes(Cog):
                 if 'https://steamcommunity.com/' in text:
                     match = re.search(STEAM_URL_PATTERN, text)
                     if match:
-                        steam_url = match.group(0)
+                        steam_url: Optional[str] = match.group(0)
                     else:
-                        raise ValueError(f"Didn't match steam URL: {url}")
+                        print(text)
+                        #raise ValueError(f"Didn't match steam URL: {url}")
                 else:
                     steam_url = None
                 category = Type.CO if steam_url else Type.UNKNOWN
@@ -263,7 +266,7 @@ class MeetingNotes(Cog):
     async def _categorize(self, ctx: Context):
         if not self.suggestions:
             await ctx.send(f"Suggestions not collected yet. "
-                           f"Run `{self.bot.command_prefix}create` first"
+                           f"Run `{self.bot.command_prefix}create` first")
             return
         unknowns = [s for s in self.suggestions
                     if s.category == Type.UNKNOWN]
@@ -273,14 +276,17 @@ class MeetingNotes(Cog):
                 categories = "|".join(CATEGORY_OPTIONS .split('\n'))
                 await ctx.send(f"{unknown.author}: {unknown.title}\n"
                                f"{categories}")
-                await self._prompt(ctx, self._parse_category, unknown)
+                if await self._prompt(ctx, self._parse_category, unknown) \
+                        == "edit":
+                    await ctx.send("Post correction")
+                    await self._prompt(ctx, self._parse_correction, unknown)
 
-        self.co = [s for s in self.suggestions if s.category == Type.CO]
+        self.officers = [s for s in self.suggestions if s.category == Type.CO]
         self.both = [s for s in self.suggestions if s.category == Type.BOTH]
         self.staff = [s for s in self.suggestions if s.category == Type.STAFF]
         self.unknown = [s for s in self.suggestions
                         if s.category == Type.UNKNOWN]
-        self.categories = [self.co, self.both, self.staff, self.unknown]
+        self.categories = [self.officers, self.both, self.staff, self.unknown]
 
         print("after categorize")
         print(self.suggestions)
@@ -289,14 +295,14 @@ class MeetingNotes(Cog):
     async def _sort(self, ctx: Context):
         while True:
             msg = "Current ordering:\n```\n"
-            n = 1
-            for collection, name in zip(self.categories, self.category_names):
+            number = 1
+            for collection, name in zip(self.categories, self.CATEGORY_NAMES):
                 if collection:
                     msg += CATEGORY.format(name)
                     for entry in collection:
-                        msg += TITLE.format(n, entry.title, entry.author)
-                        entry.number = n
-                        n += 1
+                        msg += TITLE.format(number, entry.title, entry.author)
+                        entry.number = number
+                        number += 1
                     msg += '\n'
             msg += "```\nReply either with `ok` or send corrected order."
             await ctx.send(msg)
@@ -306,7 +312,7 @@ class MeetingNotes(Cog):
                 break
 
     async def _prompt(self, ctx: Context, parser: Callable,
-                      data: Any = None):
+                      data: Any = None, awaitable=False):
         self.awaiting_reply = True
 
         def pred(m: Message):
@@ -316,12 +322,18 @@ class MeetingNotes(Cog):
         while True:
             response: Message = await self.bot.wait_for('message',
                                                         check=pred)
-            reply = response.content
+            reply = response.clean_content
             try:
-                data = parser(reply, data)
+                if awaitable:
+                    data = await parser(reply, data)
+                else:
+                    data = parser(reply, data)
             except InvalidReply as e:
-                if e.message:
-                    await ctx.send(str(e))
+                if reply == "cancel":
+                    await ctx.send("Cancelled")
+                    self.awaiting_reply = False
+                    raise PromptCancelled
+                await ctx.send(str(e))
             except Exception:
                 # Parser returned something unexpected, exiting
                 self.awaiting_reply = False
@@ -338,7 +350,7 @@ class MeetingNotes(Cog):
 
     def _parse_sorting(self, reply: str, _):
         collections = {
-            "CO": self.co,
+            "CO": self.officers,
             "Staff & CO": self.both,
             "Staff": self.staff,
             "Unknown": self.unknown,
@@ -348,19 +360,24 @@ class MeetingNotes(Cog):
         reply = parse_code_block(reply)
         categories = reply.split('## Suggestions - ')
         if categories[0]:
-            raise InvalidReply('Invalid data at the beginning')
+            raise InvalidReply("Invalid data at the beginning")
         categories = categories[1:]
         for category in categories:
-            name, *suggestions = list(filter(len, category.strip().split('\n')))
+            name, *suggestions = list(
+                filter(len, category.strip().split('\n')))
             collection = collections[name]
             tmp = []
             for suggestion in suggestions:
                 match = re.match('### (\\d+)\\. (.+) \\((.+)\\)', suggestion)
-                number = int(match.group(1))
-                entry = [x for x in collection if x.number == number][0]
-                entry.title = match.group(2)
-                entry.author = match.group(3)
-                tmp.append(entry)
+                if match:
+                    number = int(match.group(1))
+                    entry = [x for x in collection if x.number == number][0]
+                    entry.title = match.group(2)
+                    entry.author = match.group(3)
+                    tmp.append(entry)
+                else:
+                    raise InvalidReply("Did not match the format:\n"
+                                       f"```\n{suggestion}\n```")
             collection[:] = tmp
 
     def _parse_category(self, reply: str, suggestion: Suggestion):
@@ -371,28 +388,37 @@ class MeetingNotes(Cog):
             suggestion.category = Type.BOTH
         elif reply in ['3', 's', 'staff']:
             suggestion.category = Type.STAFF
+        elif reply in ['4', 'e', 'edit']:
+            return "edit"
         else:
             raise InvalidReply("Invalid reply.")
         return suggestion
 
+    def _parse_correction(self, reply: str, suggestion: Suggestion):
+        if ':' not in reply:
+            raise InvalidReply("Invalid reply, missing ':'.")
+        author, title = reply.split(':', maxsplit=1)
+        suggestion.author = author
+        suggestion.title = title
+
     async def _save(self):
         data = {}
-        with open('notes.md', 'w') as md:
-            md.write(START)
-            for collection, name in zip(self.categories, self.category_names):
+        with open('notes.md', 'w') as f:
+            f.write(START)
+            for collection, name in zip(self.categories, self.CATEGORY_NAMES):
                 if collection:
                     data_ = []
-                    md.write(CATEGORY.format(name))
+                    f.write(CATEGORY.format(name))
                     for entry in collection:
-                        md.write(TITLE.format(entry.number, entry.title,
-                                              entry.author))
-                        md.write(f'- {entry.url}\n')
+                        f.write(TITLE.format(entry.number, entry.title,
+                                             entry.author))
+                        f.write(f'- {entry.url}\n')
                         if entry.steam_url:
-                            md.write(f'- {entry.steam_url}\n')
-                        md.write(VOTES)
+                            f.write(f'- {entry.steam_url}\n')
+                        f.write(VOTES)
                         data_.append(entry.dump())
                     data[name] = data_
-            md.write(FOOTER)
+            f.write(FOOTER)
         with open('notes.json', 'w') as f:
             json.dump(data, f, indent=4)
 
@@ -401,7 +427,9 @@ class MeetingNotes(Cog):
         await ctx.send(f"An error occured: {error}")
         # print(''.join(traceback.format_exception(type(error),
         #       error, error.__traceback__)))
-        traceback.print_exc()
+        #print(vars(error))
+        traceback.print_tb(error.original)
+        print(error)
 
 
 def setup(bot: ZeusBot):
