@@ -72,6 +72,8 @@ class Suggestions(Cog):
                 # to the author
                 text = self.config['message'].format(
                     message.channel.name, message.content, self.image_keyword)
+                if self.config['use_threads']:
+                    text = f"{text}\n{self.config['thread_message']}"
                 await message.author.send(text)
                 await message.delete()
 

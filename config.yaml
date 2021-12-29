@@ -59,7 +59,10 @@ cogs:
 
       If this is an image with a caption that wasn't detected
       correctly, please prefix the message with `{2}`
+    thread_message: >
+      To comment on suggestions, please create a thread on the suggestion message.
     post_links: False
+    use_threads: True
   meetingnotes:
     keyword: '**'
     channels:
