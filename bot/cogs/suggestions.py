@@ -4,6 +4,7 @@ from bot import ZeusBot
 from bot.cog import Cog
 from discord import Embed, Message
 from discord.channel import TextChannel
+from discord.errors import Forbidden
 from discord.ext import commands
 
 
@@ -16,13 +17,39 @@ class Suggestions(Cog):
 
     async def init(self):
         await super().init()
+        await self._get_channels()
+        self._check_channels()
+
+    async def _get_channels(self):
         for channels in self.config['channels']:
-            suggestions = await self.bot.fetch_channel(channels['suggestions'])
-            discussion = await self.bot.fetch_channel(channels['discussion'])
-            self.channels.append({
-                'suggestions': suggestions,
-                'discussions': discussion
-            })
+            channel_dict = {}
+            for name in ['suggestions', 'discussion']:
+                if channels.get(name, None):
+                    try:
+                        channel = await self.bot.fetch_channel(channels[name])
+                    except Forbidden as e:
+                        raise ValueError(f"Cannot access {name} channel") from e
+                    print(f"{name} found: {channel}")
+                    channel_dict[name] = channel
+            self.channels.append(channel_dict)
+
+    def _get_channel(self, channels, name):
+        """Check that specified channel exists and is messageable
+
+        Raises ValueError if either doesn't match"""
+        channel = channels.get(name, None)
+        if not channel:
+            raise ValueError(f"Missing {name} channel")
+        member = channel.guild.get_member(self.bot.user.id)
+        if not channel.permissions_for(member).send_messages:
+            raise ValueError(f"Cannot send messages to {name} channel")
+
+    def _check_channels(self):
+        for guild_ch in self.channels:
+            self._get_channel(guild_ch, 'suggestions')
+
+            if self.config['discussion_channel']:
+                self._get_channel(guild_ch, 'discussion')
 
     def _correct_channel(self, channel: TextChannel):
         for channels in self.channels:
@@ -78,7 +105,7 @@ class Suggestions(Cog):
                 await message.delete()
 
     async def _handle_suggestion(self, message: Message):
-        if self.config['post_links']:
+        if self.config['discussion_channel']:
             channels = [ch for ch in self.channels
                         if message.channel == ch['suggestions']][0]
 

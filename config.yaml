@@ -26,9 +26,9 @@ cogs:
   suggestions:
     channels:
     - suggestions: 360434525798531084
-      discussion: 418476840806645770
+      discussion: null
     - suggestions: 810636847780331531
-      discussion: 810636915858210876
+      discussion: null
     reactions:
     # \N{HEAVY PLUS SIGN}
     - "\u2795"
@@ -61,7 +61,7 @@ cogs:
       correctly, please prefix the message with `{2}`
     thread_message: >
       To comment on suggestions, please create a thread on the suggestion message.
-    post_links: False
+    discussion_channel: False
     use_threads: True
   meetingnotes:
     keyword: '**'
