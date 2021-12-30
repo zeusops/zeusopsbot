@@ -28,8 +28,8 @@ class Suggestions(Cog):
                     try:
                         channel = await self.bot.fetch_channel(channels[name])
                     except Forbidden as e:
-                        raise ValueError(f"Cannot access {name} channel") from e
-                    print(f"{name} found: {channel}")
+                        raise ValueError(f"Cannot access {name} channel") \
+                                from e
                     channel_dict[name] = channel
             self.channels.append(channel_dict)
 
@@ -113,11 +113,13 @@ class Suggestions(Cog):
             embed = Embed(title=title, description="[Link to suggestion]({})"
                                                    .format(message.jump_url))
             embed.set_author(name=message.author.display_name)
-            discussion_message = await channels['discussions'].send(embed=embed)
+            discussion_message = await channels['discussions'] \
+                .send(embed=embed)
 
             embed = Embed(description="[Link to discussion]({})"
                                       .format(discussion_message.jump_url))
-            suggestion_message = await channels['suggestions'].send(embed=embed)
+            suggestion_message = await channels['suggestions'] \
+                .send(embed=embed)
 
             reaction_target = suggestion_message
         else:

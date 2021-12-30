@@ -118,6 +118,7 @@ class InvalidReply(Exception):
 class PromptCancelled(Exception):
     pass
 
+
 class NoChanges(Exception):
     pass
 
@@ -247,7 +248,7 @@ class MeetingNotes(Cog):
                         steam_url: Optional[str] = match.group(0)
                     else:
                         print(text)
-                        #raise ValueError(f"Didn't match steam URL: {url}")
+                        # raise ValueError(f"Didn't match steam URL: {url}")
                 else:
                     steam_url = None
                 category = Type.CO if steam_url else Type.UNKNOWN
@@ -427,7 +428,7 @@ class MeetingNotes(Cog):
         await ctx.send(f"An error occured: {error}")
         # print(''.join(traceback.format_exception(type(error),
         #       error, error.__traceback__)))
-        #print(vars(error))
+        # print(vars(error))
         traceback.print_tb(error.original)
         print(error)
 

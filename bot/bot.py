@@ -6,10 +6,12 @@ from discord.abc import User
 from discord.ext import commands
 
 
-def _merge(a, b, path=[], update=True):
+def _merge(a, b, path=None, update=True):
     """merges b into a
     http://stackoverflow.com/questions/7204805/python-dictionaries-of-dictionaries-merge
     https://stackoverflow.com/a/25270947/3005969"""
+    if path is None:
+        path = []
     for key in b:
         if key in a:
             if isinstance(a[key], dict) and isinstance(b[key], dict):
@@ -17,7 +19,7 @@ def _merge(a, b, path=[], update=True):
             elif a[key] == b[key]:
                 pass  # same leaf value
             elif isinstance(a[key], list) and isinstance(b[key], list):
-                for idx, val in enumerate(b[key]):
+                for idx, _ in enumerate(b[key]):
                     a[key][idx] = _merge(a[key][idx], b[key][idx],
                                          path + [str(key), str(idx)],
                                          update=update)
