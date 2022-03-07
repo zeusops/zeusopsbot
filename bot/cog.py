@@ -1,17 +1,18 @@
-from typing import Callable, Dict, List, Union
+from typing import Callable, Union, TYPE_CHECKING
 
 from discord.ext import commands
 
-from bot import ZeusBot
+if TYPE_CHECKING:
+    from bot import ZeusBot
 
 
 class Cog(commands.Cog):
-    def __init__(self, bot: ZeusBot) -> None:
+    def __init__(self, bot: 'ZeusBot') -> None:
         print("Loading cog {}".format(self.qualified_name))
         self.bot = bot
         name = self.__class__.__name__.lower()
-        self.config: Dict = self.bot.config.get('cogs', {}).get(name, {})
-        self.checks: Dict[str, Union[Callable, List[Callable]]] = {}
+        self.config: dict = self.bot.config.get('cogs', {}).get(name, {})
+        self.checks: dict[str, Union[Callable, list[Callable]]] = {}
 
     def _add_checks(self):
         print("Adding checks for {}".format(self.qualified_name))
@@ -27,7 +28,6 @@ class Cog(commands.Cog):
                                   command.qualified_name))
 
     async def init(self):
-        """This method gets called at the end of the bot's `on_ready` block,
-        if implemented."""
+        """This method gets called at the end of the bot's `on_ready` block"""
         print("Cog {} init".format(self.qualified_name))
         self._add_checks()

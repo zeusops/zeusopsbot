@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import Optional
 
 from bot import ZeusBot
 from bot.cog import Cog
@@ -13,7 +13,7 @@ class Suggestions(Cog):
         super().__init__(bot)
         self.keyword: str = self.config['keyword']
         self.image_keyword: str = self.config['image_keyword']
-        self.channels: List[Dict[str, TextChannel]] = []
+        self.channels: list[dict[str, TextChannel]] = []
 
     async def init(self):
         await super().init()
@@ -21,19 +21,25 @@ class Suggestions(Cog):
         self._check_channels()
 
     async def _get_channels(self):
+        """Fetch all configured channels"""
+        channels: dict[str, Optional[int]]
         for channels in self.config['channels']:
-            channel_dict = {}
+            channel_dict: dict[str, TextChannel] = {}
             for name in ['suggestions', 'discussion']:
-                if channels.get(name, None):
+                channel_id = channels.get(name, None)
+                if channel_id:
                     try:
-                        channel = await self.bot.fetch_channel(channels[name])
+                        channel = await self.bot.fetch_channel(channel_id)
+                        if not isinstance(channel, TextChannel):
+                            raise TypeError(f"Channel {name} is not a "
+                                            "text channel")
                     except Forbidden as e:
                         raise ValueError(f"Cannot access {name} channel") \
                                 from e
                     channel_dict[name] = channel
             self.channels.append(channel_dict)
 
-    def _get_channel(self, channels, name):
+    def _check_channel(self, channels: dict[str, TextChannel], name: str):
         """Check that specified channel exists and is messageable
 
         Raises ValueError if either doesn't match"""
@@ -41,17 +47,23 @@ class Suggestions(Cog):
         if not channel:
             raise ValueError(f"Missing {name} channel")
         member = channel.guild.get_member(self.bot.user.id)
+        if not member:
+            raise ValueError("Bot's member not found on guild "
+                             f"{channel.guild}")
         if not channel.permissions_for(member).send_messages:
             raise ValueError(f"Cannot send messages to {name} channel")
 
     def _check_channels(self):
+        """Check that suggestion (and optional discussion) channels exist and
+        are messageable"""
         for guild_ch in self.channels:
-            self._get_channel(guild_ch, 'suggestions')
+            self._check_channel(guild_ch, 'suggestions')
 
             if self.config['discussion_channel']:
-                self._get_channel(guild_ch, 'discussion')
+                self._check_channel(guild_ch, 'discussion')
 
-    def _correct_channel(self, channel: TextChannel):
+    def _is_correct_channel(self, channel: TextChannel):
+        """Check that channel is in the list of channels to listen to"""
         for channels in self.channels:
             if channel == channels['suggestions']:
                 return True
@@ -59,11 +71,15 @@ class Suggestions(Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):
-        if message.author.bot or \
-                message.content.startswith(self.bot.command_prefix) or \
-                not self._correct_channel(message.channel):
-            # We only care about messages that are sent to the suggestion
-            # channels, not sent by bots and are not commands
+        # We only care about messages that are sent to the suggestion
+        # channels, not sent by bots and are not commands
+        if message.author.bot:
+            return
+        if not isinstance(message.channel, TextChannel):
+            return
+        command_prefix = tuple(await self.bot.get_prefix(message))
+        if (message.content.startswith(command_prefix)
+                or not self._is_correct_channel(message.channel)):
             return
 
         is_suggestion = False

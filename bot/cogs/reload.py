@@ -38,7 +38,7 @@ class Reload(Cog):
                 await ctx.send("Failed to reload following extensions: {}"
                                .format(not_loaded))
         for cog in self.bot.cogs.values():
-            if "init" in dir(cog):
+            if isinstance(cog, Cog):
                 await cog.init()
 
     def _is_staff(self, ctx: Context):

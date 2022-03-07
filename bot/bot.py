@@ -5,6 +5,8 @@ from discord import Member, TextChannel
 from discord.abc import User
 from discord.ext import commands
 
+from .cog import Cog
+
 
 def _merge(a, b, path=None, update=True):
     """merges b into a
@@ -52,7 +54,7 @@ class ZeusBot(commands.Bot):
             # Admin is considered staff across all guilds
             return True
         try:
-            for role in user.roles:
+            for role in user.roles:  # type: ignore
                 if role.id == self.staff_role or role.name == self.staff_role:
                     return True
         except AttributeError:
@@ -102,5 +104,5 @@ class ZeusBot(commands.Bot):
         for extension in self.config['bot']['extensions']:
             self.load_extension(extension)
         for cog in self.cogs.values():
-            if "init" in dir(cog):
+            if isinstance(cog, Cog):
                 await cog.init()
