@@ -110,15 +110,21 @@ class Suggestions(Cog):
                 # the desktop client can't add multiple attachments in a single
                 # message
                 return
-            else:
-                # Other messages will be deleted after sending a notification
-                # to the author
-                text = self.config['message'].format(
-                    message.channel.name, message.content, self.image_keyword)
-                if self.config['use_threads']:
-                    text = f"{text}\n{self.config['thread_message']}"
-                await message.author.send(text)
-                await message.delete()
+            if message.type == 18:
+                # Message is a new thread. The current library version (v1.7.3)
+                # can't handle this properly yet, so using a workaround. It
+                # seems that creating a thread to a cached message doesn't
+                # trigger this event handler, only threads created to older
+                # messages will.
+                return
+            # Other messages will be deleted after sending a notification
+            # to the author
+            text = self.config['message'].format(
+                message.channel.name, message.content, self.image_keyword)
+            if self.config['use_threads']:
+                text = f"{text}\n{self.config['thread_message']}"
+            await message.author.send(text)
+            await message.delete()
 
     async def _handle_suggestion(self, message: Message):
         if self.config['discussion_channel']:
