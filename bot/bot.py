@@ -1,5 +1,6 @@
 from typing import Dict, Union
 
+import discord
 import yaml
 from discord import Member, TextChannel
 from discord.abc import User
@@ -36,7 +37,10 @@ def _merge(a, b, path=None, update=True):
 
 class ZeusBot(commands.Bot):
     def __init__(self, *args, config: Dict, **kwargs):
-        super().__init__(*args, **kwargs)
+        intents = discord.Intents.default()
+        intents.messages = True
+        super().__init__(*args, **kwargs, intents=intents)
+
         self.config = config
         self.channels: Dict[str, TextChannel] = {}
         self.staff_role = self.config['guild']['roles']['staff']
