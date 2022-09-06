@@ -1,11 +1,12 @@
 from typing import Optional
 
-from bot import ZeusBot
-from bot.cog import Cog
 from discord import Embed, Message
 from discord.channel import TextChannel
 from discord.errors import Forbidden
 from discord.ext import commands
+
+from bot import ZeusBot
+from bot.cog import Cog
 
 
 class Suggestions(Cog):
