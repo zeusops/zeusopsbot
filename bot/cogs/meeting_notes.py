@@ -1,3 +1,4 @@
+import os
 import subprocess
 import json
 import re
@@ -205,8 +206,10 @@ class MeetingNotes(Cog):
         await ctx.send("Saving")
         await self._save()
         await ctx.send("Done")
+        env = os.environ.copy()
+        env["GH_TOKEN"] = self.config['gh_token']
         await ctx.send(subprocess.check_output(
-            ["gh", "gist", "create", "notes.md"]).decode())
+            ["gh", "gist", "create", "notes.md"], env=env).decode())
 
     @commands.command(aliases=['c'])
     async def categorize(self, ctx: Context):

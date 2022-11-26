@@ -17,3 +17,6 @@ cogs:
       discussion: 123456
     - suggestions: 123456
       discussion: 123456
+cogs:
+  meetingnotes:
+    gh_token: TOKEN_HERE
