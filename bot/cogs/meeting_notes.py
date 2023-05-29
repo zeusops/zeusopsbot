@@ -22,12 +22,12 @@ STEAM_URL_PATTERN = '(https://steamcommunity.com/' \
                     '.*/filedetails/\\?id=\\d+)'
 CATEGORY_OPTIONS = "1, c, co\n2, b, both\n3, s, staff\n4, e, edit"
 
-START = """CO & Staff meeting 2022-mm
+START = """CO & Staff meeting 2023-mm
 ===
 
 ###### tags: `zeusops` `meeting`
 
-###### date : 2022-mm-dd (CO) / 2022-mm-dd (staff)
+###### date : 2023-mm-dd
 
 [Previous notes](https://www.zeusops.com/meetings)
 
@@ -37,9 +37,8 @@ START = """CO & Staff meeting 2022-mm
 ### Staff
 - Capry
 - Gehock
+- Matt
 - Miller
-- Stroker
-- Zuzu
 
 ## Preface
 
