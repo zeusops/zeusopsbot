@@ -164,6 +164,8 @@ class MeetingNotes(Cog):
     def __init__(self, bot: ZeusBot) -> None:
         super().__init__(bot)
         self.keyword: str = self.config['keyword']
+        self.divider: str = self.config['divider']
+        self.divider_regex: str = self.config['divider_regex']
         self.channel: TextChannel = None
         self.suggestions: List[Suggestion] = []
         self.officers: List[Suggestion] = []
@@ -185,8 +187,44 @@ class MeetingNotes(Cog):
     #         return False
     #     return True
 
+    async def _find_divider_message(self) -> Message:
+        """Find the divider message between the suggestions of different months
+
+        Raises:
+            ValueError: No matching message found
+
+        Returns:
+            Message: The divider message
+        """
+        async for message in self.channel.history(limit=100):
+            if re.fullmatch(self.divider_regex, message.clean_content) is not None:
+                return message
+        raise ValueError("No divider message found")
+
+    async def _send_divider(self, next_month: str):
+        """Send a divider message
+
+        Args:
+            next_month (str): Name of the next month
+        """
+        await self.channel.send(self.divider.format(next_month))
+
+    @commands.command(aliases=["mn"])
+    async def meetingnotes(self, ctx: Context, next_month: str):
+        """Find suggestions from the current month and create a meeting notes
+
+        Args:
+            next_month (str): Name of the next month
+        """
+        start_message = await self._find_divider_message()
+        await self._create(ctx, start_message)
+        await self._send_divider(next_month)
+
     @commands.command()
     async def create(self, ctx: Context, start_message: MessageConverter):
+        await self._create(ctx, start_message)
+
+    async def _create(self, ctx: Context, start_message: Message):
         await ctx.send("Creating")
         count = await self._load_suggestions(start_message)
         if count > 0:
