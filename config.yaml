@@ -69,3 +69,4 @@ cogs:
     divider: '**Suggestions for {0} below**'
     channels:
       suggestions: 360434525798531084
+    save_gist: True

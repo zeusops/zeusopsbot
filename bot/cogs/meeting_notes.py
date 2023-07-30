@@ -166,7 +166,9 @@ class MeetingNotes(Cog):
         self.keyword: str = self.config['keyword']
         self.divider: str = self.config['divider']
         self.divider_regex: str = self.config['divider_regex']
-        self.gh_token: str = self.config['gh_token']
+        self.save_gist: bool = self.config['save_gist']
+        if self.save_gist:
+            self.gh_token: str = self.config['gh_token']
         self.channel: TextChannel = None
         self.suggestions: List[Suggestion] = []
         self.officers: List[Suggestion] = []
@@ -238,10 +240,11 @@ class MeetingNotes(Cog):
         await ctx.send("Saving")
         await self._save()
         await ctx.send("Done")
-        env = os.environ.copy()
-        env["GH_TOKEN"] = self.gh_token
-        await ctx.send(subprocess.check_output(
-            ["gh", "gist", "create", "notes.md"], env=env).decode())
+        if self.save_gist:
+            env = os.environ.copy()
+            env["GH_TOKEN"] = self.gh_token
+            await ctx.send(subprocess.check_output(
+                ["gh", "gist", "create", "notes.md"], env=env).decode())
 
     @commands.command(aliases=['c'])
     async def categorize(self, ctx: Context):
