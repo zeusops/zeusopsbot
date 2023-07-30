@@ -65,8 +65,9 @@ cogs:
     use_threads: True
   meetingnotes:
     keyword: '**'
-    divider_regex: '^\*\*Suggestions for [A-Z][a-z]+ below\*\*$'
+    divider_regex: '^\*\*Suggestions for ([A-Z][a-z]+) below\*\*$'
     divider: '**Suggestions for {0} below**'
+    date_locale: en_US.UTF-8
     channels:
       suggestions: 360434525798531084
     save_gist: True

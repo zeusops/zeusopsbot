@@ -1,3 +1,4 @@
+import calendar
 import os
 import subprocess
 import json
@@ -169,6 +170,7 @@ class MeetingNotes(Cog):
         self.save_gist: bool = self.config['save_gist']
         if self.save_gist:
             self.gh_token: str = self.config['gh_token']
+        self.date_locale: str = self.config['date_locale']
         self.channel: TextChannel = None
         self.suggestions: List[Suggestion] = []
         self.officers: List[Suggestion] = []
@@ -190,7 +192,7 @@ class MeetingNotes(Cog):
     #         return False
     #     return True
 
-    async def _find_divider_message(self) -> Message:
+    async def _find_divider_message(self) -> tuple[Message, str]:
         """Find the divider message between the suggestions of different months
 
         Raises:
@@ -198,10 +200,13 @@ class MeetingNotes(Cog):
 
         Returns:
             Message: The divider message
+            str: Name of the current month
         """
         async for message in self.channel.history(limit=100):
-            if re.fullmatch(self.divider_regex, message.clean_content) is not None:
-                return message
+            match = re.fullmatch(self.divider_regex, message.clean_content)
+            if match:
+                month_name = match.group(1)
+                return message, month_name
         raise ValueError("No divider message found")
 
     async def _send_divider(self, next_month: str):
@@ -212,15 +217,31 @@ class MeetingNotes(Cog):
         """
         await self.channel.send(self.divider.format(next_month))
 
-    @commands.command(aliases=["mn"])
-    async def meetingnotes(self, ctx: Context, next_month: str):
-        """Find suggestions from the current month and create a meeting notes
+    def _next_month(self, month_name: str) -> str:
+        """Return the name of the next month
 
         Args:
-            next_month (str): Name of the next month
+            month_name (str): Current month's name
+
+        Returns:
+            str: Name of the next month
         """
-        start_message = await self._find_divider_message()
+        # different_locale is an undocumented function. Used the same way as
+        # seen in the calendar module's source code. See
+        # https://stackoverflow.com/a/50678960/3005969
+        with calendar.different_locale(self.date_locale):
+            month_number = list(calendar.month_name).index(month_name) + 1
+            if month_number > 12:
+                month_number -= 12
+            return calendar.month_name[month_number]
+
+    @commands.command(aliases=["mn"])
+    async def meetingnotes(self, ctx: Context):
+        """Find suggestions from the current month and create a meeting notes
+        """
+        start_message, month_name = await self._find_divider_message()
         await self._create(ctx, start_message)
+        next_month = self._next_month(month_name)
         await self._send_divider(next_month)
 
     @commands.command()
