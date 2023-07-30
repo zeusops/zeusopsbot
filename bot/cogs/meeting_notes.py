@@ -194,7 +194,7 @@ class MeetingNotes(Cog):
             start_message = await channel.fetch_message(817514329326616616)
             print("msg", start_message)
         await ctx.send("Creating")
-        count = await self._create(start_message)
+        count = await self._load_suggestions(start_message)
         if count > 0:
             await ctx.send("Categories")
             await self._categorize(ctx)
@@ -225,7 +225,8 @@ class MeetingNotes(Cog):
         await self._save()
         await ctx.send("Save done")
 
-    async def _create(self, start_message: Message, limit=100):
+    async def _load_suggestions(self, start_message: Message, limit=100) -> int:
+        self.suggestions = []
         guild: Guild = start_message.guild
         print("guild", guild)
         print("creating")
