@@ -186,13 +186,7 @@ class MeetingNotes(Cog):
     #     return True
 
     @commands.command()
-    async def create(self, ctx: Context,
-                     start_message: MessageConverter = None):
-        if start_message is None:
-            channel = await self.bot.fetch_channel(360434525798531084)
-            print("ch", channel)
-            start_message = await channel.fetch_message(817514329326616616)
-            print("msg", start_message)
+    async def create(self, ctx: Context, start_message: MessageConverter):
         await ctx.send("Creating")
         count = await self._load_suggestions(start_message)
         if count > 0:
