@@ -1,3 +1,4 @@
+import re
 from typing import Optional
 
 from discord import Embed, Message
@@ -20,6 +21,7 @@ class Suggestions(Cog):
         self.thread_message: str = self.config['thread_message']
         self.discussion_channel: bool = self.config['discussion_channel']
         self.use_threads: bool = self.config['use_threads']
+        self.divider_regex: str = self.config['divider_regex']
 
     async def init(self):
         await super().init()
@@ -86,8 +88,13 @@ class Suggestions(Cog):
         if not isinstance(message.channel, TextChannel):
             return
         command_prefix = tuple(await self.bot.get_prefix(message))
-        if (message.content.startswith(command_prefix)
-                or not self._is_correct_channel(message.channel)):
+        if (
+            message.content.startswith(command_prefix)
+            or not self._is_correct_channel(message.channel)
+        ):
+            return
+        match = re.fullmatch(self.divider_regex, message.clean_content)
+        if match:
             return
 
         is_suggestion = False

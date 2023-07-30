@@ -63,6 +63,7 @@ cogs:
       To comment on suggestions, please create a thread on the suggestion message.
     discussion_channel: False
     use_threads: True
+    divider_regex: '^\*\*Suggestions for ([A-Z][a-z]+) below\*\*$'
   meetingnotes:
     keyword: '**'
     divider_regex: '^\*\*Suggestions for ([A-Z][a-z]+) below\*\*$'
