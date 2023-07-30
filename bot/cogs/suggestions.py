@@ -12,9 +12,14 @@ from bot.cog import Cog
 class Suggestions(Cog):
     def __init__(self, bot: ZeusBot) -> None:
         super().__init__(bot)
+        self.channels: list[dict[str, TextChannel]] = []
+        self.reactions: list[str] = self.config['reactions']
         self.keyword: str = self.config['keyword']
         self.image_keyword: str = self.config['image_keyword']
-        self.channels: list[dict[str, TextChannel]] = []
+        self.message: str = self.config['message']
+        self.thread_message: str = self.config['thread_message']
+        self.discussion_channel: bool = self.config['discussion_channel']
+        self.use_threads: bool = self.config['use_threads']
 
     async def init(self):
         await super().init()
@@ -57,10 +62,12 @@ class Suggestions(Cog):
     def _check_channels(self):
         """Check that suggestion (and optional discussion) channels exist and
         are messageable"""
+        if not self.channels:
+            raise ValueError("No channels configured")
         for guild_ch in self.channels:
             self._check_channel(guild_ch, 'suggestions')
 
-            if self.config['discussion_channel']:
+            if self.discussion_channel:
                 self._check_channel(guild_ch, 'discussion')
 
     def _is_correct_channel(self, channel: TextChannel):
@@ -120,15 +127,15 @@ class Suggestions(Cog):
                 return
             # Other messages will be deleted after sending a notification
             # to the author
-            text = self.config['message'].format(
+            text = self.message.format(
                 message.channel.name, message.content, self.image_keyword)
-            if self.config['use_threads']:
-                text = f"{text}\n{self.config['thread_message']}"
+            if self.use_threads:
+                text = f"{text}\n{self.thread_message}"
             await message.author.send(text)
             await message.delete()
 
     async def _handle_suggestion(self, message: Message):
-        if self.config['discussion_channel']:
+        if self.discussion_channel:
             channels = [ch for ch in self.channels
                         if message.channel == ch['suggestions']][0]
 
@@ -148,7 +155,7 @@ class Suggestions(Cog):
         else:
             reaction_target = message
 
-        for reaction in self.config['reactions']:
+        for reaction in self.reactions:
             await reaction_target.add_reaction(reaction)
 
 
