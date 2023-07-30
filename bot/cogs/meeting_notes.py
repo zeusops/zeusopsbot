@@ -465,8 +465,12 @@ class MeetingNotes(Cog):
         # print(''.join(traceback.format_exception(type(error),
         #       error, error.__traceback__)))
         # print(vars(error))
-        traceback.print_tb(error.original)
-        print(error)
+        try:
+            print(type(error.original))
+            traceback.print_tb(error.original)
+            print(error)
+        except Exception:
+            raise error.original
 
 
 def setup(bot: ZeusBot):
