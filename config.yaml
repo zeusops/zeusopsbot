@@ -71,4 +71,4 @@ cogs:
     date_locale: en_US.UTF-8
     channels:
       suggestions: 360434525798531084
-    save_gist: True
+    publish_notes: True

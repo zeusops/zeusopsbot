@@ -167,8 +167,8 @@ class MeetingNotes(Cog):
         self.keyword: str = self.config['keyword']
         self.divider: str = self.config['divider']
         self.divider_regex: str = self.config['divider_regex']
-        self.save_gist: bool = self.config['save_gist']
-        if self.save_gist:
+        self.publish_notes: bool = self.config['publish_notes']
+        if self.publish_notes:
             self.gh_token: str = self.config['gh_token']
         self.date_locale: str = self.config['date_locale']
         self.channel: TextChannel = None
@@ -261,7 +261,7 @@ class MeetingNotes(Cog):
         await ctx.send("Saving")
         await self._save()
         await ctx.send("Done")
-        if self.save_gist:
+        if self.publish_notes:
             env = os.environ.copy()
             env["GH_TOKEN"] = self.gh_token
             await ctx.send(subprocess.check_output(
