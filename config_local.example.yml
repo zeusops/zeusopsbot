@@ -19,4 +19,8 @@ cogs:
       discussion: 123456
 cogs:
   meetingnotes:
-    gh_token: TOKEN_HERE
+    hackmd:
+      token: TOKEN_HERE
+    github_gist:
+      enable: True
+      token: TOKEN_HERE

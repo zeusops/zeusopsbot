@@ -1,9 +1,9 @@
 import calendar
-import os
-import subprocess
+import io
 import json
 import re
 import traceback
+import typing
 from enum import IntEnum
 from typing import Any, Callable, List, Optional
 
@@ -18,17 +18,18 @@ from discord.user import User
 
 from bot import ZeusBot
 from bot.cog import Cog
+from bot.utils.exporters import Exporter, GitHubExporter, HackMDExporter
 
 STEAM_URL_PATTERN = '(https://steamcommunity.com/' \
                     '.*/filedetails/\\?id=\\d+)'
 CATEGORY_OPTIONS = "1, c, co\n2, b, both\n3, s, staff\n4, e, edit"
 
-START = """CO & Staff meeting 2023-mm
+START = """CO & Staff meeting {month}
 ===
 
 ###### tags: `zeusops` `meeting`
 
-###### date : 2023-mm-dd
+###### date : {date}
 
 [Previous notes](https://www.zeusops.com/meetings)
 
@@ -160,17 +161,24 @@ def parse_code_block(text: str):
 
 
 class MeetingNotes(Cog):
-    CATEGORY_NAMES = ["CO", "Staff & CO", "Staff", "Unknown"]
+    CATEGORY_NAMES = ("CO", "Staff & CO", "Staff", "Unknown")
+
+    DESTINATIONS: dict[str, typing.Type[Exporter]] = {
+        "hackmd": HackMDExporter,
+        "github_gist": GitHubExporter,
+    }
 
     def __init__(self, bot: ZeusBot) -> None:
         super().__init__(bot)
         self.keyword: str = self.config['keyword']
         self.divider: str = self.config['divider']
         self.divider_regex: str = self.config['divider_regex']
-        self.publish_notes: bool = self.config['publish_notes']
-        if self.publish_notes:
-            self.gh_token: str = self.config['gh_token']
         self.date_locale: str = self.config['date_locale']
+
+        self.exporters: dict[str, Exporter] = {}
+        self._init_exporters()
+        self.save_to_disk: bool = self.config["save_to_disk"]
+
         self.channel: TextChannel = None
         self.suggestions: List[Suggestion] = []
         self.officers: List[Suggestion] = []
@@ -184,6 +192,12 @@ class MeetingNotes(Cog):
         await super().init()
         self.channel = await self.bot.fetch_channel(
             self.config['channels']['suggestions'])
+
+    def _init_exporters(self):
+        for name, handler in self.DESTINATIONS.items():
+            if self.config[name]["enable"]:
+                exporter = handler(self.config[name])
+                self.exporters[name] = exporter
 
     # @bot.check
     # async def await_reply(ctx: Context):
@@ -258,14 +272,22 @@ class MeetingNotes(Cog):
             await ctx.send("No unknowns")
         await ctx.send("Sorting")
         await self._sort(ctx)
-        await ctx.send("Saving")
-        await self._save()
+        markdown, data = await self._create_text()
+
+        await self._export(ctx, markdown, data)
         await ctx.send("Done")
-        if self.publish_notes:
-            env = os.environ.copy()
-            env["GH_TOKEN"] = self.gh_token
-            await ctx.send(subprocess.check_output(
-                ["gh", "gist", "create", "notes.md"], env=env).decode())
+
+    async def _export(self, ctx: Context, markdown: str, data: dict):
+        if self.save_to_disk:
+            await ctx.send("Saving to disk")
+            await self._save_to_disk(markdown, data)
+        for name, exporter in self.exporters.items():
+            await ctx.send(f"Exporting to {name}")
+            output = exporter.export(markdown)
+            if output:
+                await ctx.send(output)
+            else:
+                await ctx.send("Export done")
 
     @commands.command(aliases=['c'])
     async def categorize(self, ctx: Context):
@@ -279,7 +301,7 @@ class MeetingNotes(Cog):
 
     @commands.command(aliases=['s'])
     async def save(self, ctx: Context):
-        await self._save()
+        await self._create_text()
         await ctx.send("Save done")
 
     async def _load_suggestions(self, start_message: Message, limit=100) -> int:
@@ -462,25 +484,30 @@ class MeetingNotes(Cog):
         suggestion.author = author
         suggestion.title = title
 
-    async def _save(self):
+    async def _create_text(self) -> tuple[str, dict]:
+        markdown = io.StringIO()
         data = {}
-        with open('notes.md', 'w') as f:
-            f.write(START)
-            for collection, name in zip(self.categories, self.CATEGORY_NAMES):
-                if collection:
-                    data_ = []
-                    f.write(CATEGORY.format(name))
-                    for entry in collection:
-                        f.write(TITLE.format(entry.number, entry.title,
-                                             entry.author))
-                        f.write(f'- {entry.url}\n')
-                        if entry.steam_url:
-                            f.write(f'- {entry.steam_url}\n')
-                        f.write(VOTES)
-                        data_.append(entry.dump())
-                    data[name] = data_
-            f.write(FOOTER)
-        with open('notes.json', 'w') as f:
+        markdown.write(START)
+        for collection, name in zip(self.categories, self.CATEGORY_NAMES):
+            if collection:
+                data_ = []
+                markdown.write(CATEGORY.format(name))
+                for entry in collection:
+                    markdown.write(TITLE.format(entry.number, entry.title,
+                                            entry.author))
+                    markdown.write(f"- {entry.url}\n")
+                    if entry.steam_url:
+                        markdown.write(f"- {entry.steam_url}\n")
+                    markdown.write(VOTES)
+                    data_.append(entry.dump())
+                data[name] = data_
+        markdown.write(FOOTER)
+        return markdown.getvalue(), data
+
+    async def _save_to_disk(self, markdown: str, data: dict):
+        with open("notes.md", "w") as f:
+            f.write(markdown)
+        with open("notes.json", "w") as f:
             json.dump(data, f, indent=4)
 
     @commands.Cog.listener()

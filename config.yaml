@@ -71,4 +71,12 @@ cogs:
     date_locale: en_US.UTF-8
     channels:
       suggestions: 360434525798531084
-    publish_notes: True
+    save_to_disk: False
+    hackmd:
+      enable: True
+      team_name: zeusops
+      index_id: MNNjYnckQgSESY5jsf7pFQ
+      index_line: "- [{date}]({link})"
+      index_line_regex: "^- \\[(?P<date>\\d{4}-\\d{2})\\]\\(.+\\)$"
+    github_gist:
+      enable: False
