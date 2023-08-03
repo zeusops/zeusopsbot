@@ -5,14 +5,14 @@ import re
 import traceback
 import typing
 from enum import IntEnum
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, cast
 
 from discord import Message, NotFound
 from discord.channel import TextChannel
 from discord.ext import commands
 from discord.ext.commands import Context
 from discord.ext.commands.converter import MessageConverter
-from discord.ext.commands.errors import CommandError
+from discord.ext.commands.errors import CommandInvokeError
 from discord.guild import Guild
 from discord.user import User
 
@@ -179,7 +179,7 @@ class MeetingNotes(Cog):
         self._init_exporters()
         self.save_to_disk: bool = self.config["save_to_disk"]
 
-        self.channel: TextChannel = None
+        self.channel: TextChannel
         self.suggestions: List[Suggestion] = []
         self.officers: List[Suggestion] = []
         self.both: List[Suggestion] = []
@@ -260,7 +260,7 @@ class MeetingNotes(Cog):
 
     @commands.command()
     async def create(self, ctx: Context, start_message: MessageConverter):
-        await self._create(ctx, start_message)
+        await self._create(ctx, cast(Message, start_message))
 
     async def _create(self, ctx: Context, start_message: Message):
         await ctx.send("Creating")
@@ -306,6 +306,8 @@ class MeetingNotes(Cog):
 
     async def _load_suggestions(self, start_message: Message, limit=100) -> int:
         self.suggestions = []
+        if not start_message.guild:
+            raise ValueError("Start message is not in a guild")
         guild: Guild = start_message.guild
         print("guild", guild)
         print("creating")
@@ -314,7 +316,7 @@ class MeetingNotes(Cog):
                                                   limit=limit):
             text: str = message.clean_content
             if text.startswith(self.keyword):
-                author: User = message.author
+                author = message.author
                 if isinstance(author, User):
                     try:
                         author = await guild.fetch_member(author.id)
@@ -511,7 +513,7 @@ class MeetingNotes(Cog):
             json.dump(data, f, indent=4)
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: Context, error: CommandError):
+    async def on_command_error(self, ctx: Context, error: CommandInvokeError):
         await ctx.send(f"An error occured: {error}")
         # print(''.join(traceback.format_exception(type(error),
         #       error, error.__traceback__)))
