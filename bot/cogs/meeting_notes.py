@@ -378,6 +378,8 @@ class MeetingNotes(Cog):
         await ctx.send("Unknowns done")
 
     async def _sort(self, ctx: Context):
+        if not self.categories:
+            raise ValueError("Categories not created yet.")
         while True:
             msg = "Current ordering:\n```\n"
             number = 1
@@ -517,11 +519,8 @@ class MeetingNotes(Cog):
         await ctx.send(f"An error occured: {error}")
         # print(''.join(traceback.format_exception(type(error),
         #       error, error.__traceback__)))
-        # print(vars(error))
         try:
-            print(type(error.original))
-            traceback.print_tb(error.original)
-            print(error)
+            traceback.print_exception(error.original)
         except Exception:
             raise error.original
 
