@@ -104,13 +104,13 @@ kept
 
 **COs** this month:
 ```
-MAJ 
-CPT 
-CPT 
-1LT 
-1LT 
+MAJ{spc}
+CPT{spc}
+CPT{spc}
+1LT{spc}
+1LT{spc}
 ```
-"""  # NOQA
+""".format(spc=" ")
 
 
 class InvalidReply(Exception):
