@@ -243,7 +243,7 @@ class MeetingNotes(Cog):
         # different_locale is an undocumented function. Used the same way as
         # seen in the calendar module's source code. See
         # https://stackoverflow.com/a/50678960/3005969
-        with calendar.different_locale(self.date_locale):
+        with calendar.different_locale((self.date_locale, "UTF-8")):
             month_number = list(calendar.month_name).index(month_name) + 1
             if month_number > 12:
                 month_number -= 12
