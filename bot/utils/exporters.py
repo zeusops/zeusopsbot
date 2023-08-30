@@ -25,7 +25,7 @@ class HackMDExporter(Exporter):
         self.index_line: str = config["index_line"]
         self.index_line_regex: str = config["index_line_regex"]
 
-        self.read_perm: str = config.get("read_perm", "signed_in")
+        self.read_perm: str = config.get("read_perm", "guest")
         self.write_perm: str = config.get("write_perm", "signed_in")
 
         # The HackMD API is buggy and strange. Currently there is apparently no
