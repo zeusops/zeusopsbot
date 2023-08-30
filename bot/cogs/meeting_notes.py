@@ -267,9 +267,9 @@ class MeetingNotes(Cog):
         count = await self._load_suggestions(start_message)
         if count > 0:
             await ctx.send("Categories")
-            await self._categorize(ctx)
         else:
             await ctx.send("No unknowns")
+        await self._categorize(ctx)
         await ctx.send("Sorting")
         await self._sort(ctx)
         markdown, data = await self._create_text()
