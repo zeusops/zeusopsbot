@@ -1,0 +1,6 @@
+discord.py-stubs
+types-PyYAML
+flake8
+pylint
+mypy
+pytest
