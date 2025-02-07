@@ -165,3 +165,10 @@ class GitHubExporter(Exporter):
                 ["gh", "gist", "create", fp.name], env=env
             ).decode()
         return output
+
+
+class LocalExporter(Exporter):
+    def export(self, text: str) -> str:
+        with tempfile.NamedTemporaryFile(delete=False) as fp:
+            fp.write(text.encode())
+            return fp.name

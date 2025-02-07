@@ -6,6 +6,7 @@ import yaml
 from discord import Member, TextChannel
 from discord.abc import User
 from discord.ext import commands
+import mergedeep
 
 from .cog import Cog
 
@@ -24,6 +25,9 @@ def _merge(a, b, path=None, update=True):
                 pass  # same leaf value
             elif isinstance(a[key], list) and isinstance(b[key], list):
                 for idx, _ in enumerate(b[key]):
+                    if idx >= len(a[key]):
+                        a[key].append({})
+                    print(key, idx, path)
                     a[key][idx] = _merge(a[key][idx], b[key][idx],
                                          path + [str(key), str(idx)],
                                          update=update)
@@ -79,7 +83,10 @@ class ZeusBot(commands.Bot):
         try:
             with open("config_local.yaml", "r") as f:
                 local_config = yaml.load(f, yaml.SafeLoader)
-            config = _merge(config, local_config)
+            #config = _merge(config, local_config)
+            config = mergedeep.merge(
+                config, local_config, strategy=mergedeep.Strategy.TYPESAFE_REPLACE
+            )
         except FileNotFoundError:
             # Local config doesn't exist, continue
             pass

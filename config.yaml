@@ -24,11 +24,12 @@ cogs:
   #   channel: 0
   #   keyword: SUGGESTION
   suggestions:
+    #channels: "asd"
     channels:
-    - suggestions: 360434525798531084
-      discussion: null
-    - suggestions: 810636847780331531
-      discussion: null
+    - 360434525798531084
+    - 810636847780331531
+    #- suggestions: 810636847780331531
+    #  discussion: null
     reactions:
     # \N{HEAVY PLUS SIGN}
     - "\u2795"
@@ -80,3 +81,5 @@ cogs:
       index_line_regex: "^- \\[(?P<date>\\d{4}-\\d{2})\\]\\(.+\\)$"
     github_gist:
       enable: False
+    local:
+      enable: false

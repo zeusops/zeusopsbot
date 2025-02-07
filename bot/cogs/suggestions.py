@@ -3,7 +3,7 @@ from typing import Optional
 
 from discord import Embed, Message
 from discord.channel import TextChannel
-from discord.errors import Forbidden
+from discord.errors import Forbidden, NotFound
 from discord.ext import commands
 
 from bot import ZeusBot
@@ -31,6 +31,7 @@ class Suggestions(Cog):
     async def _get_channels(self):
         """Fetch all configured channels"""
         channels: dict[str, Optional[int]]
+        print(self.config["channels"])
         for channels in self.config['channels']:
             channel_dict: dict[str, TextChannel] = {}
             for name in ['suggestions', 'discussion']:
@@ -44,6 +45,10 @@ class Suggestions(Cog):
                     except Forbidden as e:
                         raise ValueError(f"Cannot access {name} channel") \
                                 from e
+                    except NotFound as e:
+                        raise ValueError(
+                            f"Unknown channel {channel_id} ({name})"
+                        ) from e
                     channel_dict[name] = channel
             self.channels.append(channel_dict)
 

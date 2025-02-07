@@ -18,7 +18,7 @@ from discord.user import User
 
 from bot import ZeusBot
 from bot.cog import Cog
-from bot.utils.exporters import Exporter, GitHubExporter, HackMDExporter
+from bot.utils.exporters import Exporter, GitHubExporter, HackMDExporter, LocalExporter
 
 STEAM_URL_PATTERN = '(https://steamcommunity.com/' \
                     '.*/filedetails/\\?id=\\d+)'
@@ -166,6 +166,7 @@ class MeetingNotes(Cog):
     DESTINATIONS: dict[str, typing.Type[Exporter]] = {
         "hackmd": HackMDExporter,
         "github_gist": GitHubExporter,
+        "local": LocalExporter,
     }
 
     def __init__(self, bot: ZeusBot) -> None:
