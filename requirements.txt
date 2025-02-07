@@ -1,2 +1,3 @@
 discord.py>=1.3.4,<2.0.0
 pyyaml
+-e git+https://github.com/eugene87222/python-HackMD@c19134b17ee4b05665d0ff460971415b779fc688#egg=python-HackMD
