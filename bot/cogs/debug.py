@@ -23,12 +23,12 @@ class Debug(Cog):
 
     @commands.command(aliases=['cfgd'])
     async def configdump(self, ctx: Context):
-        print("Dumping config")
+        self.logger.info("Dumping config")
         await self._dump_config(ctx)
 
     @commands.command(aliases=['cfgr'])
     async def configreload(self, ctx: Context):
-        print("Reloading config")
+        self.logger.info("Reloading config")
         self.bot.reload_config()
         await self._dump_config(ctx)
 

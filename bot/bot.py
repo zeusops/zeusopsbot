@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, Union
 
 import discord
@@ -44,6 +45,11 @@ class ZeusBot(commands.Bot):
         self.config = config
         self.channels: Dict[str, TextChannel] = {}
         self.staff_role = self.config['guild']['roles']['staff']
+
+        logging.basicConfig(level=logging.DEBUG)
+        logging.getLogger("discord").setLevel(logging.INFO)
+        logging.getLogger("discord.gateway").setLevel(logging.WARNING)
+        self.logger = logging.getLogger(__name__)
 
     def is_admin(self, user: Union[User, Member]):
         return user.id in self.config['bot']['admins']
@@ -97,12 +103,12 @@ class ZeusBot(commands.Bot):
         self.config = self._load_config()
 
     async def on_ready(self):
-        print("Waiting until ready")
+        self.logger.info("Waiting until ready")
         await self.wait_until_ready()
-        print(f"Logged in as {self.user.name}#{self.user.discriminator}")
-        print("Connected")
+        self.logger.info("Logged in as %s#%s", self.user.name, self.user.discriminator)
+        self.logger.info("Connected")
         await self.load_extensions()
-        print("Extensions loaded")
+        self.logger.info("Extensions loaded")
 
     async def load_extensions(self) -> None:
         for extension in self.config['bot']['extensions']:

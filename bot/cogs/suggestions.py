@@ -142,6 +142,7 @@ class Suggestions(Cog):
             await message.delete()
 
     async def _handle_suggestion(self, message: Message):
+        self.logger.debug("Handling suggestion id %d from %s", message.id, message.author.name)
         if self.discussion_channel:
             channels = [ch for ch in self.channels
                         if message.channel == ch['suggestions']][0]

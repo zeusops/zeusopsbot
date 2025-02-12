@@ -309,8 +309,8 @@ class MeetingNotes(Cog):
         if not start_message.guild:
             raise ValueError("Start message is not in a guild")
         guild: Guild = start_message.guild
-        print("guild", guild)
-        print("creating")
+        self.logger.info("guild %s", guild)
+        self.logger.info("creating")
         message: Message
         async for message in self.channel.history(after=start_message,
                                                   limit=limit):
@@ -331,7 +331,7 @@ class MeetingNotes(Cog):
                     if match:
                         steam_url: Optional[str] = match.group(0)
                     else:
-                        print(text)
+                        self.logger.info(text)
                         # raise ValueError(f"Didn't match steam URL: {url}")
                 else:
                     steam_url = None
@@ -343,7 +343,7 @@ class MeetingNotes(Cog):
                     category,
                     steam_url,
                 ))
-        print("suggestions")
+        self.logger.info("suggestions")
         count = sum(1 for s in self.suggestions
                     if s.category == Type.UNKNOWN)
         return count
@@ -373,8 +373,8 @@ class MeetingNotes(Cog):
                         if s.category == Type.UNKNOWN]
         self.categories = [self.officers, self.both, self.staff, self.unknown]
 
-        print("after categorize")
-        print(self.suggestions)
+        self.logger.info("after categorize")
+        self.logger.info(self.suggestions)
         await ctx.send("Unknowns done")
 
     async def _sort(self, ctx: Context):

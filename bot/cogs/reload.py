@@ -17,7 +17,7 @@ class Reload(Cog):
 
     @commands.command()
     async def reload(self, ctx: Context):
-        print("Reloading extensions")
+        self.logger.info("Reloading extensions")
         self.bot.reload_config()
 
         unloaded = []
@@ -49,7 +49,7 @@ class Reload(Cog):
     async def _unload_extension(self, ctx, extension):
         try:
             self.bot.unload_extension(extension)
-            print("unloaded", extension)
+            self.logger.info("unloaded %s", extension)
         except ExtensionNotLoaded:
             await ctx.send("Skipping unload for not loaded extension {}"
                            .format(extension))
@@ -60,11 +60,11 @@ class Reload(Cog):
     async def _load_extension(self, ctx, extension):
         try:
             self.bot.load_extension(extension)
-            print("loaded", extension)
+            self.logger.info("loaded %s", extension)
         except Exception:
             await ctx.send("An error occured while reloading: ```{}```"
                            .format(traceback.format_exc()))
-            print(traceback.format_exc())
+            self.logger.info(traceback.format_exc())
             return False
         else:
             return True
